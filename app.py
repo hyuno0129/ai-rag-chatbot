@@ -259,23 +259,47 @@ def is_profile_question(question):
     profile_keywords = [
         "이름",
         "성함",
+
+        "학번",
+        "학생번호",
+
         "전화번호",
         "핸드폰",
         "휴대폰",
         "연락처",
+
+        "이메일",
+        "메일",
+
         "주소",
         "사는 곳",
+
+        "학교",
+        "대학교",
+        "학과",
+        "전공",
+        "학년",
+
+        "생일",
+        "생년월일",
+
+        "MBTI",
+        "취미",
+
+        "좋아하는 음식",
+        "좋아하는 음악",
+
         "가족",
         "아버지",
+        "아빠",
         "어머니",
         "엄마",
-        "아빠",
         "동생"
     ]
 
     for keyword in profile_keywords:
 
-        if keyword in question:
+        if keyword.lower() in question.lower():
 
             return True
 
