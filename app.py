@@ -295,6 +295,7 @@ def is_profile_question(question):
         "어머니",
         "엄마",
         "동생"
+        "누나"
     ]
 
     for keyword in profile_keywords:
