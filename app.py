@@ -1,5 +1,5 @@
 import streamlit as st
-from openai import OpenAI
+from google import genai
 
 st.set_page_config(
     page_title="AI RAG 챗봇",
@@ -9,9 +9,9 @@ st.set_page_config(
 st.title("🤖 AI 질문 답변 챗봇")
 st.write("궁금한 내용을 질문해보세요.")
 
-# OpenAI API 연결
-client = OpenAI(
-    api_key=st.secrets["OPENAI_API_KEY"]
+# Gemini API 연결
+client = genai.Client(
+    api_key=st.secrets["GEMINI_API_KEY"]
 )
 
 # 대화 기록
@@ -29,27 +29,27 @@ question = st.chat_input("질문을 입력해주세요.")
 
 if question:
 
-    # 사용자 질문 화면에 표시
+    # 사용자 질문 표시
     with st.chat_message("user"):
         st.markdown(question)
 
-    # 대화 기록 저장
+    # 사용자 질문 저장
     st.session_state.messages.append({
         "role": "user",
         "content": question
     })
 
-    # AI 답변
+    # Gemini 답변
     with st.chat_message("assistant"):
 
         try:
 
-            response = client.responses.create(
-                model="gpt-5",
-                input=question
+            response = client.models.generate_content(
+                model="gemini-3.8-flash",
+                contents=question
             )
 
-            answer = response.output_text
+            answer = response.text
 
             st.markdown(answer)
 
