@@ -1,18 +1,16 @@
 import streamlit as st
 from google import genai
-import PyPDF2
-from docx import Document
 
 st.set_page_config(
-    page_title="AI RAG 챗봇",
+    page_title="나의 AI 챗봇",
     page_icon="🤖"
 )
 
-st.title("🤖 AI RAG 챗봇")
-st.write("PDF 또는 Word 문서를 업로드하고 질문해보세요.")
+st.title("🤖 나의 AI 챗봇")
+st.write("내 정보와 문서를 바탕으로 질문에 답해주는 AI입니다.")
 
 # =========================
-# Gemini API 연결
+# Gemini 연결
 # =========================
 
 client = genai.Client(
@@ -20,51 +18,19 @@ client = genai.Client(
 )
 
 # =========================
-# 문서 업로드
+# 개인 프로필
 # =========================
 
-st.sidebar.header("📄 문서 업로드")
-
-uploaded_file = st.sidebar.file_uploader(
-    "PDF 또는 DOCX 파일을 선택하세요.",
-    type=["pdf", "docx"]
-)
-
-# =========================
-# 문서 내용 추출
-# =========================
-
-document_text = ""
-
-if uploaded_file is not None:
-
-    # PDF
-    if uploaded_file.name.endswith(".pdf"):
-
-        pdf_reader = PyPDF2.PdfReader(uploaded_file)
-
-        for page in pdf_reader.pages:
-            text = page.extract_text()
-
-            if text:
-                document_text += text + "\n"
-
-    # DOCX
-    elif uploaded_file.name.endswith(".docx"):
-
-        doc = Document(uploaded_file)
-
-        for paragraph in doc.paragraphs:
-            document_text += paragraph.text + "\n"
-
-    st.sidebar.success(
-        f"✅ {uploaded_file.name} 업로드 완료"
-    )
-
-    st.sidebar.write(
-        f"문서 글자 수: {len(document_text):,}"
-    )
-
+profile = {
+    "이름": "홍길동",
+    "전화번호": "010-1234-5678",
+    "주소": "서울특별시 강남구 테헤란로 123",
+    "가족관계": {
+        "아버지": "홍아버지",
+        "어머니": "김어머니",
+        "동생": "홍동생"
+    }
+}
 
 # =========================
 # 대화 기록
@@ -73,26 +39,21 @@ if uploaded_file is not None:
 if "messages" not in st.session_state:
     st.session_state.messages = []
 
-
-# 이전 대화 표시
 for message in st.session_state.messages:
 
     with st.chat_message(message["role"]):
         st.markdown(message["content"])
 
-
 # =========================
-# 질문 입력
+# 질문
 # =========================
 
 question = st.chat_input(
-    "문서에 대해 질문해주세요."
+    "내 정보에 대해 질문해보세요."
 )
-
 
 if question:
 
-    # 사용자 질문 표시
     with st.chat_message("user"):
         st.markdown(question)
 
@@ -101,46 +62,41 @@ if question:
         "content": question
     })
 
+    # =========================
+    # AI에게 전달할 프롬프트
+    # =========================
 
-    # =========================
-    # Gemini 답변
-    # =========================
+    prompt = f"""
+너는 사용자의 개인 정보를 관리하는 AI 챗봇이다.
+
+아래에 등록된 사용자 정보를 참고해서 질문에 답변한다.
+
+[사용자 정보]
+이름: {profile["이름"]}
+전화번호: {profile["전화번호"]}
+주소: {profile["주소"]}
+
+가족관계:
+아버지: {profile["가족관계"]["아버지"]}
+어머니: {profile["가족관계"]["어머니"]}
+동생: {profile["가족관계"]["동생"]}
+
+[중요한 규칙]
+1. 위에 제공된 정보만 사용한다.
+2. 등록되지 않은 개인정보를 추측하지 않는다.
+3. 질문에 대한 정보가 없으면
+   "등록된 정보에서 찾을 수 없습니다."
+   라고 답한다.
+4. 사용자가 물어본 정보만 간단하고 명확하게 답한다.
+5. 한국어로 답변한다.
+
+사용자의 질문:
+{question}
+"""
 
     with st.chat_message("assistant"):
 
         try:
-
-            if document_text:
-
-                prompt = f"""
-다음 문서 내용을 참고해서 사용자의 질문에 답변하세요.
-
-문서 내용:
-----------------
-{document_text}
-----------------
-
-사용자 질문:
-{question}
-
-답변 규칙:
-1. 반드시 문서 내용을 우선적으로 참고하세요.
-2. 문서에 없는 내용은 추측하지 마세요.
-3. 문서에서 답을 찾을 수 없다면
-   "문서에서 해당 내용을 찾을 수 없습니다."
-   라고 답변하세요.
-4. 답변은 이해하기 쉽게 한국어로 작성하세요.
-"""
-
-            else:
-
-                prompt = f"""
-사용자의 질문에 친절하게 답변하세요.
-
-질문:
-{question}
-"""
-
 
             response = client.models.generate_content(
                 model="gemini-3.8-flash",
@@ -151,13 +107,10 @@ if question:
 
             st.markdown(answer)
 
-
-            # 답변 저장
             st.session_state.messages.append({
                 "role": "assistant",
                 "content": answer
             })
-
 
         except Exception as e:
 
