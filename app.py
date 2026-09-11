@@ -16,15 +16,15 @@ from profile_data import PROFILE
 # =========================================================
 
 st.set_page_config(
-    page_title="나의 AI RAG 챗봇",
+    page_title="나의 AI 챗봇",
     page_icon="🤖",
     layout="wide"
 )
 
-st.title("🤖 나의 AI RAG 챗봇")
+st.title("🤖 나의 AI 챗봇")
 
 st.write(
-    "개인 정보와 업로드한 문서를 바탕으로 질문에 답해주는 AI 챗봇입니다."
+    "개인 정보와 업로드한 문서를 설명하는 AI 챗봇입니다."
 )
 
 
