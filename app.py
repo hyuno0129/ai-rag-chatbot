@@ -294,7 +294,7 @@ def is_profile_question(question):
         "아빠",
         "어머니",
         "엄마",
-        "동생"
+        "동생",
         "누나"
     ]
 
